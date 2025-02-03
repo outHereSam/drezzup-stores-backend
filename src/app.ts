@@ -27,6 +27,7 @@ const posts = [
   },
 ];
 
+// Routes
 app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {

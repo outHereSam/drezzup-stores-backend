@@ -6,6 +6,7 @@ export interface User {
   email: string;
   password: string;
   refreshToken: string | null;
+  role: string;
 }
 
 export const findUserByEmail = async (email: string): Promise<User | null> => {

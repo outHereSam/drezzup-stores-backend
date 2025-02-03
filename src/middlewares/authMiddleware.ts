@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export interface AuthenticatedRequest extends Request {
-  user?: { id: number; email: string };
+  user?: { id: number; email: string; role: string };
 }
 
 export const authenticateToken = (
@@ -26,7 +26,16 @@ export const authenticateToken = (
       return;
     }
 
-    req.user = user as { id: number; email: string };
+    req.user = user as { id: number; email: string; role: string };
     next();
   });
+};
+
+export const authorizeRoles = (roles: string) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    if (!roles.includes(req.user?.role || "")) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+    next();
+  };
 };
