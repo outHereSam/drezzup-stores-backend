@@ -6,7 +6,7 @@ export interface ProductModel {
   brand_id: number;
 }
 
-export const getAllModels = async (): Promise<ProductModel[]> => {
+export const getAllProductModels = async (): Promise<ProductModel[]> => {
   const result = await pool.query("SELECT * FROM product_models");
   return result.rows;
 };

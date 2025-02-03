@@ -3,6 +3,8 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import authRoutes from "./routes/authRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
+import brandRoutes from "./routes/brandRoutes";
+import productModelRoutes from "./routes/productModelRoutes";
 import {
   AuthenticatedRequest,
   authenticateToken,
@@ -31,6 +33,8 @@ const posts = [
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/brands", brandRoutes);
+app.use("/api/productModels", productModelRoutes);
 
 app.get("/", (req, res) => {
   res.send("Drezzup backend is running");

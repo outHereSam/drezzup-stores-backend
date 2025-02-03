@@ -6,7 +6,7 @@ export interface Category {
 }
 
 export const getAllCategories = async (): Promise<Category[]> => {
-  const result = await pool.query("SELECT * FROM Category");
+  const result = await pool.query("SELECT * FROM categories");
   return result.rows;
 };
 
@@ -14,7 +14,7 @@ export const createCategory = async (
   categoryName: string
 ): Promise<Category> => {
   const result = await pool.query(
-    "INSERT INTO Category (category_name) VALUES ($1) RETURNING *",
+    "INSERT INTO categories (category_name) VALUES ($1) RETURNING *",
     [categoryName]
   );
   return result.rows[0];
