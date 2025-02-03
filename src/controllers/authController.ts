@@ -7,7 +7,7 @@ import {
   createUser,
   User,
   updateUserRefreshToken,
-} from "../models/userModel";
+} from "../models/user.model";
 
 dotenv.config();
 
