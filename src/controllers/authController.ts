@@ -11,9 +11,13 @@ import {
 
 dotenv.config();
 
-const generateAccessToken = (user: { id: number; email: string }) => {
+const generateAccessToken = (user: {
+  id: number;
+  email: string;
+  role: string;
+}) => {
   return jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: user.role },
     process.env.ACCESS_TOKEN_SECRET as string,
     {
       expiresIn: "15m",
@@ -21,9 +25,13 @@ const generateAccessToken = (user: { id: number; email: string }) => {
   );
 };
 
-const generateRefreshToken = (user: { id: number; email: string }) => {
+const generateRefreshToken = (user: {
+  id: number;
+  email: string;
+  role: string;
+}) => {
   return jwt.sign(
-    { id: user.id, email: user.email },
+    { id: user.id, email: user.email, role: user.role },
     process.env.REFRESH_TOKEN_SECRET as string,
     {
       expiresIn: "7d",
@@ -70,8 +78,16 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ error: "Invalid credentials" });
   }
 
-  const accessToken = generateAccessToken({ id: user.id, email: user.email });
-  const refreshToken = generateRefreshToken({ id: user.id, email: user.email });
+  const accessToken = generateAccessToken({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  });
+  const refreshToken = generateRefreshToken({
+    id: user.id,
+    email: user.email,
+    role: user.role,
+  });
 
   await updateUserRefreshToken(user.id, refreshToken);
 
@@ -108,6 +124,7 @@ export const refreshToken = async (
     const newAccessToken = generateAccessToken({
       id: user.id,
       email: user.email,
+      role: user.role,
     });
 
     res.json({ accessToken: newAccessToken });
@@ -145,5 +162,27 @@ export const logoutUser = async (
     res.json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(403).json({ error: "Invalid or expired refresh token" });
+  }
+};
+
+export const getUserByEmail = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.params;
+
+    if (!email) {
+      res.status(400).json({ error: "Email parameter is required" });
+      return;
+    }
+
+    const user = await findUserByEmail(email);
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ error: "An error occured while fetching the user" });
   }
 };

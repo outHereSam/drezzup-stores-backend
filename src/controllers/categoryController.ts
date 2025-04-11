@@ -20,6 +20,18 @@ export const getCategories = async (
   }
 };
 
+export const getCategoryByCategoryName = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const category = await getCategoryByName(req.params.category_name);
+    res.json(category);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch category" });
+  }
+};
+
 export const addCategory = async (
   req: Request,
   res: Response
