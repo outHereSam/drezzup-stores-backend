@@ -12,7 +12,11 @@ import {
   updateProductById,
   deleteProductById,
   getProductsByCategoryId,
+  getProductVariants,
+  updateProductVariant,
+  deleteProductVariant,
 } from "../models/product.model";
+import { updateProductModelById } from "../models/productModel.model";
 import { uploadToS3 } from "../services/s3Service";
 
 export const addProduct = async (
@@ -157,14 +161,31 @@ export const updateProduct = async (
       return;
     }
 
-    // Expecting these fields to be provided in the request body:
-    // category, brand, product_model_id, tag (optional), and price.
-    const { category, brand, product_model_id, tag, price } = req.body;
-    if (!category || !brand || !product_model_id || price === undefined) {
-      res.status(400).json({ error: "Missing required fields" });
-      return;
+    // Extract data from request body
+    const {
+      category,
+      brand,
+      product_model_id,
+      tag,
+      price,
+      model_name,
+      model_description,
+      variants,
+    } = req.body;
+
+    // Begin transaction
+    await pool.query("BEGIN");
+
+    // 1. Update product model if provided
+    if (model_name && model_description) {
+      await updateProductModelById(
+        parseInt(product_model_id, 10),
+        model_name,
+        model_description
+      );
     }
 
+    // 2. Update the product
     const updatedProduct: Product | null = await updateProductById(
       productId,
       parseInt(category, 10),
@@ -173,12 +194,62 @@ export const updateProduct = async (
       tag ? parseInt(tag, 10) : null,
       parseFloat(price)
     );
+
     if (!updatedProduct) {
+      await pool.query("ROLLBACK");
       res.status(404).json({ error: "Product not found or update failed" });
       return;
     }
-    res.status(200).json(updatedProduct);
+
+    // 3. Handle variants if provided
+    if (variants && Array.isArray(variants)) {
+      // First, get existing variants
+      const existingVariants = await getProductVariants(productId);
+
+      // Update or create variants
+      for (const variant of variants) {
+        if (variant.variant_id) {
+          // Update existing variant
+          await updateProductVariant(
+            variant.variant_id,
+            variant.color,
+            variant.size,
+            variant.quantity
+          );
+        } else {
+          // Create new variant
+          await insertProductVariant(
+            productId,
+            variant.color,
+            variant.size,
+            variant.quantity
+          );
+        }
+      }
+
+      // Delete variants that are no longer in the list
+      const variantIdsToKeep = variants
+        .filter((v) => v.variant_id)
+        .map((v) => v.variant_id);
+
+      for (const existingVariant of existingVariants) {
+        if (!variantIdsToKeep.includes(existingVariant.variant_id)) {
+          await deleteProductVariant(existingVariant.variant_id);
+        }
+      }
+    }
+
+    // 4. Handle images if provided (similar to variants)
+    // ...
+
+    // Commit transaction
+    await pool.query("COMMIT");
+
+    // Return updated product with all related data
+    const completeProduct = await getProductById(productId);
+    res.status(200).json(completeProduct);
   } catch (error) {
+    await pool.query("ROLLBACK");
     console.error("Error updating product:", error);
     res.status(500).json({ error: "Failed to update product" });
   }

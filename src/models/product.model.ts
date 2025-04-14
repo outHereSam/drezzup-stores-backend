@@ -338,3 +338,42 @@ export const createProductImage = async (
     [product_id, image_id]
   );
 };
+
+// Get all variants for a product
+export const getProductVariants = async (
+  productId: number
+): Promise<ProductVariant[]> => {
+  const result = await pool.query(
+    `SELECT * FROM product_variants WHERE product_id = $1`,
+    [productId]
+  );
+  return result.rows;
+};
+
+// Update an existing product variant
+export const updateProductVariant = async (
+  variantId: number,
+  color: string,
+  size: string,
+  quantity: number
+): Promise<ProductVariant> => {
+  const result = await pool.query(
+    `UPDATE product_variants 
+     SET color = $1, size = $2, quantity = $3
+     WHERE variant_id = $4
+     RETURNING *`,
+    [color, size, quantity, variantId]
+  );
+  return result.rows[0];
+};
+
+// Delete a product variant
+export const deleteProductVariant = async (
+  variantId: number
+): Promise<boolean> => {
+  const result = await pool.query(
+    `DELETE FROM product_variants WHERE variant_id = $1 RETURNING *`,
+    [variantId]
+  );
+  return result.rowCount !== null && result.rowCount > 0;
+};
