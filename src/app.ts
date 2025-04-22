@@ -6,6 +6,7 @@ import categoryRoutes from "./routes/categoryRoutes";
 import brandRoutes from "./routes/brandRoutes";
 import productModelRoutes from "./routes/productModelRoutes";
 import productsRoutes from "./routes/productsRoutes";
+import tagsRoutes from "./routes/tagsRoutes";
 import {
   AuthenticatedRequest,
   authenticateToken,
@@ -22,6 +23,7 @@ app.use("/api/categories", categoryRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/productModels", productModelRoutes);
 app.use("/api/products", productsRoutes);
+app.use("/api/tags", tagsRoutes);
 
 app.get("/", (req, res) => {
   res.send("Drezzup backend is running");

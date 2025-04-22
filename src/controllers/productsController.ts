@@ -15,6 +15,8 @@ import {
   getProductVariants,
   updateProductVariant,
   deleteProductVariant,
+  getTags,
+  updateProductTagById,
 } from "../models/product.model";
 import { updateProductModelById } from "../models/productModel.model";
 import { uploadToS3 } from "../services/s3Service";
@@ -274,5 +276,51 @@ export const deleteProduct = async (
   } catch (error) {
     console.error("Error deleting product:", error);
     res.status(500).json({ error: "Failed to delete product" });
+  }
+};
+
+export const getAllTags = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const tags = await getTags();
+
+    res.status(200).json(tags);
+  } catch (error) {
+    console.error("Error retrieving tags:", error);
+    res.status(500).json({ error: "Failed to retrieve tags" });
+  }
+};
+
+export const updateProductTag = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { product_id, tag_id } = req.body;
+
+    // Validate the input
+    if (!product_id) {
+      res.status(400).json({ error: "Product ID is required" });
+      return;
+    }
+
+    // Update the product's tag in the database
+    const updatedProduct = await updateProductTagById(product_id, tag_id);
+
+    if (!updatedProduct) {
+      res.status(404).json({ error: "Product not found or update failed" });
+      return;
+    }
+
+    // Respond with the updated product
+    res.status(200).json({
+      message: "Product tag updated successfully",
+      product: updatedProduct,
+    });
+  } catch (error) {
+    console.error("Error updating product tag:", error);
+    res.status(500).json({ error: "Failed to update product tag" });
   }
 };

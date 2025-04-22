@@ -377,3 +377,23 @@ export const deleteProductVariant = async (
   );
   return result.rowCount !== null && result.rowCount > 0;
 };
+
+export const getTags = async (): Promise<Tag[] | null> => {
+  const result = await pool.query("SELECT tag_id, tag_name FROM tag");
+  return result.rows;
+};
+
+export const updateProductTagById = async (
+  product_id: number,
+  tag_id: number
+) => {
+  const query = `
+      UPDATE products
+      SET tag_id = $1
+      WHERE product_id = $2
+      RETURNING *;
+    `;
+  const result = await pool.query(query, [tag_id, product_id]);
+
+  return result.rowCount !== null && result.rowCount > 0;
+};
