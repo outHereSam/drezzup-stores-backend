@@ -5,6 +5,8 @@
   "scripts": {
     "devStart": "npx ts-node src/index.ts",
     "dev": "nodemon --exec ts-node src/index.ts",
+    "build": "tsc",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

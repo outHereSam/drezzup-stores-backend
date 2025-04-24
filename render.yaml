@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: drezzup-stores-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: AWS_BUCKET_NAME
+        sync: false
+
+databases:
+  - name: drezzup-stores-db
+    databaseName: drezzup_stores
+    user: drezzup_stores_user
+    plan: free
